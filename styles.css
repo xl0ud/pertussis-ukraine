@@ -1,10 +1,6 @@
 /* EpiPulse Ukraine: Кашлюк (МКХ-10: А37)
- * Оптимізовано для iOS Safari, Android Chrome та Windows
+ * Оптимізована версія з плавними переходами без лагів
  */
-
-:root {
-  --sidebar-w: 280px;
-}
 
 * {
   box-sizing: border-box;
@@ -25,6 +21,7 @@ body {
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Touch targets and interactions */
@@ -33,40 +30,18 @@ button, select, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Sidebar transition & layout */
+/* ================= OFFCANVAS SIDEBAR (ZERO REFLOW LAG) ================= */
 #sidebar {
-  width: var(--sidebar-w);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 300px;
+  max-width: 85vw;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
   -webkit-overflow-scrolling: touch;
 }
 
-#mainWrapper {
-  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@media (min-width: 1024px) {
-  body.sidebar-open #mainWrapper {
-    margin-left: var(--sidebar-w);
-  }
-  body.sidebar-closed #mainWrapper {
-    margin-left: 0;
-  }
-  body.sidebar-closed #sidebar {
-    transform: translateX(-100%);
-  }
-}
-
-@media (max-width: 1023px) {
-  #sidebar {
-    transform: translateX(-100%);
-  }
-  body.mobile-sidebar-open #sidebar {
-    transform: translateX(0);
-  }
-  #mainWrapper {
-    margin-left: 0 !important;
-  }
+#sidebarBackdrop {
+  transition: opacity 0.2s ease;
+  will-change: opacity;
 }
 
 /* KPI Cards */
@@ -80,17 +55,26 @@ button, select, [role="button"] {
   box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.08);
 }
 
-/* Leaflet Container */
+/* ================= LEAFLET MAP & VECTOR PATHS ================= */
 .leaflet-container {
-  background: #ffffff !important;
+  background: #f8fafc !important;
   font-family: inherit !important;
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hide Leaflet attribution */
+/* Hide Leaflet attribution completely */
 .leaflet-control-attribution {
   display: none !important;
+}
+
+/* Smooth SVG transitions */
+path.leaflet-interactive {
+  transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+  cursor: pointer;
+}
+path.leaflet-interactive:focus {
+  outline: none !important;
 }
 
 .leaflet-bar {
@@ -111,23 +95,24 @@ button, select, [role="button"] {
   color: #0f172a !important;
 }
 
-/* Map Tooltip */
+/* Minimal Crisp Map Tooltip */
 .map-tooltip {
-  background: rgba(15, 23, 42, 0.92) !important;
-  border: none !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 6px !important;
   color: #ffffff !important;
-  padding: 6px 10px !important;
+  padding: 4px 8px !important;
   font-size: 11px !important;
-  font-weight: 500 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  pointer-events: none;
 }
 
 .map-tooltip::before {
-  border-top-color: rgba(15, 23, 42, 0.92) !important;
+  border-top-color: rgba(15, 23, 42, 0.94) !important;
 }
 
-/* Form Controls & iOS Safari fixes */
+/* ================= FORM CONTROLS & IOS SAFARI ================= */
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -139,21 +124,24 @@ select {
   padding-right: 28px;
 }
 
-/* Prevent unwanted iOS auto-zoom on form controls */
+/* Prevent unwanted iOS auto-zoom on select */
 @media screen and (max-width: 768px) {
   select {
     font-size: 16px !important;
   }
 }
 
-/* Mobile responsive adjustments */
+/* Map responsive height */
+#ukraineMap {
+  height: 420px;
+}
 @media screen and (max-width: 640px) {
   #ukraineMap {
-    height: 320px !important;
+    height: 330px !important;
   }
 }
 
-/* Custom Scrollbar for Chrome / Edge / Safari */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;

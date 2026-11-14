@@ -15,67 +15,48 @@ var monthlyChartInstance = null;
 var leafletMap = null;
 var geoJsonLayer = null;
 var kyivMarker = null;
+var isMapDragging = false;
+
+// Full Ukrainian Month Names
+var FULL_MONTH_NAMES = [
+  'Січень', 'Лютий', 'Березень', 'Квітень',
+  'Травень', 'Червень', 'Липень', 'Серпень',
+  'Вересень', 'Жовтень', 'Листопад', 'Грудень'
+];
 
 // ================= INITIALIZATION =================
 document.addEventListener('DOMContentLoaded', function () {
   if (!window.EPI_DATA) return;
 
   populateRegionSelect();
-  initSidebarState();
   initLeafletMap();
   updateView();
   renderYearsChart();
   renderMonthlyChart();
 
   window.addEventListener('resize', function () {
-    if (window.innerWidth >= 1024) {
-      var bd = document.getElementById('sidebarBackdrop');
-      if (bd) bd.classList.add('hidden');
-      document.body.classList.remove('mobile-sidebar-open');
-    }
     if (leafletMap) {
-      setTimeout(function () { leafletMap.invalidateSize(); }, 250);
+      setTimeout(function () { leafletMap.invalidateSize(); }, 200);
     }
   });
 });
 
-// ================= SIDEBAR TOGGLE =================
-function initSidebarState() {
-  if (window.innerWidth >= 1024) {
-    document.body.classList.add('sidebar-open');
-    document.body.classList.remove('sidebar-closed');
-  } else {
-    document.body.classList.remove('sidebar-open');
-    document.body.classList.remove('mobile-sidebar-open');
-  }
-}
-
+// ================= OFFCANVAS SIDEBAR (ZERO REFLOW LAG) =================
 function toggleSidebar() {
-  var isLg = window.innerWidth >= 1024;
+  var sidebar = document.getElementById('sidebar');
   var backdrop = document.getElementById('sidebarBackdrop');
+  if (!sidebar) return;
 
-  if (isLg) {
-    if (document.body.classList.contains('sidebar-closed')) {
-      document.body.classList.remove('sidebar-closed');
-      document.body.classList.add('sidebar-open');
-    } else {
-      document.body.classList.remove('sidebar-open');
-      document.body.classList.add('sidebar-closed');
-    }
+  var isClosed = sidebar.classList.contains('-translate-x-full');
+  if (isClosed) {
+    sidebar.classList.remove('-translate-x-full');
+    sidebar.classList.add('translate-x-0');
+    if (backdrop) backdrop.classList.remove('hidden');
   } else {
-    var isMobileOpen = document.body.classList.toggle('mobile-sidebar-open');
-    if (backdrop) {
-      if (isMobileOpen) {
-        backdrop.classList.remove('hidden');
-      } else {
-        backdrop.classList.add('hidden');
-      }
-    }
+    sidebar.classList.remove('translate-x-0');
+    sidebar.classList.add('-translate-x-full');
+    if (backdrop) backdrop.classList.add('hidden');
   }
-
-  setTimeout(function () {
-    if (leafletMap) leafletMap.invalidateSize();
-  }, 280);
 }
 
 // ================= CONTROLS =================
@@ -115,6 +96,18 @@ function onRegionChange(reg) {
   }
 }
 
+function resetMapSelection() {
+  selectedRegion = 'all';
+  syncControls();
+  updateView();
+  updateMapColors();
+  resetHoverPanel();
+
+  if (leafletMap && geoJsonLayer) {
+    leafletMap.fitBounds(geoJsonLayer.getBounds(), { padding: [15, 15] });
+  }
+}
+
 function onYearChange(yr) {
   selectedYear = yr;
   syncControls();
@@ -150,14 +143,15 @@ function setMapMetric(metric) {
   var btnAbs = document.getElementById('btn-map-abs');
   if (btnRate && btnAbs) {
     if (metric === 'rate') {
-      btnRate.className = 'px-2.5 py-1 rounded bg-white text-indigo-700 shadow-sm font-semibold';
-      btnAbs.className = 'px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 font-medium';
+      btnRate.className = 'px-2.5 py-1 rounded bg-white text-indigo-700 shadow-sm font-semibold cursor-pointer';
+      btnAbs.className = 'px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 font-medium cursor-pointer';
     } else {
-      btnAbs.className = 'px-2.5 py-1 rounded bg-white text-indigo-700 shadow-sm font-semibold';
-      btnRate.className = 'px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 font-medium';
+      btnAbs.className = 'px-2.5 py-1 rounded bg-white text-indigo-700 shadow-sm font-semibold cursor-pointer';
+      btnRate.className = 'px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 font-medium cursor-pointer';
     }
   }
   updateMapColors();
+  resetHoverPanel();
 }
 
 function resetFilters() {
@@ -175,7 +169,7 @@ function resetFilters() {
   resetHoverPanel();
 
   if (leafletMap && geoJsonLayer) {
-    leafletMap.fitBounds(geoJsonLayer.getBounds(), { padding: [10, 10] });
+    leafletMap.fitBounds(geoJsonLayer.getBounds(), { padding: [15, 15] });
   }
 }
 
@@ -186,9 +180,6 @@ function syncControls() {
   var mSel = document.getElementById('monthSelect');
   if (mSel) mSel.value = selectedMonth;
 
-  var topMSel = document.getElementById('topMonthSelect');
-  if (topMSel) topMSel.value = selectedMonth;
-
   var regSel = document.getElementById('regionSelect');
   if (regSel) regSel.value = selectedRegion;
 
@@ -198,7 +189,7 @@ function syncControls() {
     var btn = document.getElementById('top-yr-' + y);
     if (btn) {
       if (selectedYear === y) {
-        btn.className = 'px-2 py-1 rounded bg-rose-600 text-white font-semibold';
+        btn.className = 'px-2 py-1 rounded bg-rose-600 text-white font-semibold shadow-xs';
       } else {
         btn.className = 'px-2 py-1 rounded text-slate-600 hover:text-slate-900 font-medium';
       }
@@ -235,14 +226,7 @@ function getCurrentStats() {
 
   if (!isAllMonths) {
     var mIdx = parseInt(selectedMonth) - 1;
-    var mItem = null;
-    for (var i = 0; i < window.EPI_DATA.months_list.length; i++) {
-      if (window.EPI_DATA.months_list[i].id === selectedMonth) {
-        mItem = window.EPI_DATA.months_list[i];
-        break;
-      }
-    }
-    if (mItem) monthName = mItem.name;
+    monthName = FULL_MONTH_NAMES[mIdx] || 'Місяць ' + selectedMonth;
 
     if (selectedYear === '2024') {
       monthNationalCases = window.EPI_DATA.monthly_dynamics.cases_2024[mIdx];
@@ -427,13 +411,22 @@ function initLeafletMap() {
     doubleClickZoom: true
   });
 
+  // Track dragging to prevent ghost tooltips & hover lag
+  leafletMap.on('dragstart', function () {
+    isMapDragging = true;
+    leafletMap.closeTooltip();
+  });
+  leafletMap.on('dragend', function () {
+    setTimeout(function () { isMapDragging = false; }, 80);
+  });
+
   if (window.UKRAINE_GEOJSON) {
     geoJsonLayer = L.geoJson(window.UKRAINE_GEOJSON, {
       style: getFeatureStyle,
       onEachFeature: onEachFeature
     }).addTo(leafletMap);
 
-    leafletMap.fitBounds(geoJsonLayer.getBounds(), { padding: [10, 10] });
+    leafletMap.fitBounds(geoJsonLayer.getBounds(), { padding: [15, 15] });
   }
 
   addKyivMarker();
@@ -443,7 +436,7 @@ function addKyivMarker() {
   if (!leafletMap) return;
 
   kyivMarker = L.circleMarker([50.4501, 30.5234], {
-    radius: 7,
+    radius: 7.5,
     fillColor: '#e11d48',
     color: '#ffffff',
     weight: 2,
@@ -451,13 +444,17 @@ function addKyivMarker() {
     fillOpacity: 0.95
   }).addTo(leafletMap);
 
-  kyivMarker.bindTooltip('м. Київ', { className: 'map-tooltip', direction: 'top' });
+  kyivMarker.bindTooltip('м. Київ', { className: 'map-tooltip', direction: 'top', sticky: false });
   kyivMarker.on('click', function () { onRegionChange('м. Київ'); });
   kyivMarker.on('mouseover', function () {
+    if (isMapDragging) return;
     var data = getRegionDataForActiveSelection('м. Київ');
     updateHoverPanel('м. Київ', data.cases, data.rate);
   });
-  kyivMarker.on('mouseout', resetHoverPanel);
+  kyivMarker.on('mouseout', function () {
+    if (isMapDragging) return;
+    resetHoverPanel();
+  });
 }
 
 function normalizeGeoName(featureName) {
@@ -482,6 +479,14 @@ function getOutbreakColor(val, isRate) {
   }
 }
 
+function getOutbreakBadge(rate) {
+  if (rate >= 30.0) return { label: 'Спалах', color: 'bg-rose-100 text-rose-700 border-rose-200' };
+  if (rate >= 10.0) return { label: 'Високий', color: 'bg-amber-100 text-amber-800 border-amber-200' };
+  if (rate >= 2.0) return { label: 'Помірний', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+  if (rate > 0) return { label: 'Фоновий', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+  return { label: 'Немає даних', color: 'bg-slate-100 text-slate-600 border-slate-200' };
+}
+
 function getFeatureStyle(feature) {
   var normName = normalizeGeoName(feature.properties.name);
   var data = getRegionDataForActiveSelection(normName);
@@ -490,10 +495,10 @@ function getFeatureStyle(feature) {
 
   return {
     fillColor: getOutbreakColor(val, mapMetric === 'rate'),
-    weight: isSelected ? 2.5 : 1,
+    weight: isSelected ? 2.5 : 1.2,
     opacity: 1,
     color: isSelected ? '#0f172a' : '#ffffff',
-    fillOpacity: 0.88
+    fillOpacity: 0.90
   };
 }
 
@@ -502,43 +507,59 @@ function onEachFeature(feature, layer) {
 
   layer.on({
     mouseover: function (e) {
+      if (isMapDragging) return;
       var l = e.target;
       l.setStyle({ weight: 2.2, color: '#0f172a', fillOpacity: 0.98 });
       l.bringToFront();
+      if (kyivMarker) kyivMarker.bringToFront();
+
       var data = getRegionDataForActiveSelection(normName);
       updateHoverPanel(normName, data.cases, data.rate);
     },
     mouseout: function (e) {
+      if (isMapDragging) return;
       geoJsonLayer.resetStyle(e.target);
+      if (kyivMarker) kyivMarker.bringToFront();
       resetHoverPanel();
     },
     click: function () { onRegionChange(normName); }
   });
 
-  layer.bindTooltip(normName, { className: 'map-tooltip', direction: 'center', sticky: true });
+  // Non-sticky center tooltip for zero jitter while panning
+  layer.bindTooltip(normName, { className: 'map-tooltip', direction: 'center', permanent: false, sticky: false });
 }
 
 function updateHoverPanel(name, cases, rate) {
   var hName = document.getElementById('mapHoverName');
-  var hStats = document.getElementById('mapHoverStats');
+  var hCases = document.getElementById('mapHoverCases');
+  var hRate = document.getElementById('mapHoverRate');
+  var hBadge = document.getElementById('mapHoverBadge');
+  var hHint = document.getElementById('mapHoverHint');
+
   if (hName) hName.textContent = formatRegionLabel(name);
-  if (hStats) {
-    hStats.textContent = cases.toLocaleString('uk-UA') + ' вип. (' + rate.toFixed(2) + ' на 100 тис.)';
+  if (hCases) hCases.textContent = cases.toLocaleString('uk-UA');
+  if (hRate) hRate.textContent = rate.toFixed(2);
+
+  if (hBadge) {
+    var b = getOutbreakBadge(rate);
+    hBadge.textContent = b.label;
+    hBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded border ' + b.color;
+  }
+
+  if (hHint) {
+    hHint.textContent = selectedRegion === name ? 'Обраний регіон' : 'Натисніть для вибору';
   }
 }
 
 function resetHoverPanel() {
-  var hName = document.getElementById('mapHoverName');
-  var hStats = document.getElementById('mapHoverStats');
   if (selectedRegion !== 'all') {
     var data = getRegionDataForActiveSelection(selectedRegion);
-    if (hName) hName.textContent = formatRegionLabel(selectedRegion);
-    if (hStats) {
-      hStats.textContent = data.cases.toLocaleString('uk-UA') + ' вип. (' + data.rate.toFixed(2) + ' на 100 тис.)';
-    }
+    updateHoverPanel(selectedRegion, data.cases, data.rate);
   } else {
-    if (hName) hName.textContent = 'Наведіть на область';
-    if (hStats) hStats.textContent = 'Оберіть регіон для перегляду';
+    var stats = getCurrentStats();
+    updateHoverPanel('Вся Україна', stats.cases, stats.rate);
+    var hHint = document.getElementById('mapHoverHint');
+    if (hHint) hHint.textContent = 'Оберіть область на карті';
   }
 }
 
@@ -556,6 +577,7 @@ function updateMapColors() {
       weight: selectedRegion === 'м. Київ' ? 3 : 2,
       color: selectedRegion === 'м. Київ' ? '#0f172a' : '#ffffff'
     });
+    kyivMarker.bringToFront();
   }
 }
 
@@ -614,9 +636,15 @@ function renderYearsChart() {
         tooltip: {
           backgroundColor: '#0f172a',
           padding: 8,
-          titleFont: { size: 12 },
+          titleFont: { size: 12, weight: 'bold' },
           bodyFont: { size: 12 },
           callbacks: {
+            title: function (items) {
+              if (items && items.length > 0) {
+                return items[0].label + ' рік';
+              }
+              return '';
+            },
             label: function (item) {
               return ' ' + item.raw.toLocaleString('uk-UA') + ' випадків';
             }
@@ -648,8 +676,8 @@ function renderMonthlyChart() {
   var bg2024 = [];
   var bg2025 = [];
   for (var i = 0; i < months.length; i++) {
-    bg2024.push(i === mIdx ? '#be123c' : 'rgba(225, 29, 72, 0.82)');
-    bg2025.push(i === mIdx ? '#047857' : 'rgba(16, 185, 129, 0.82)');
+    bg2024.push(i === mIdx ? '#be123c' : 'rgba(225, 29, 72, 0.85)');
+    bg2025.push(i === mIdx ? '#047857' : 'rgba(16, 185, 129, 0.85)');
   }
 
   if (monthlyChartInstance) {
@@ -687,9 +715,17 @@ function renderMonthlyChart() {
         tooltip: {
           backgroundColor: '#0f172a',
           padding: 8,
-          titleFont: { size: 12 },
+          titleFont: { size: 12, weight: 'bold' },
           bodyFont: { size: 12 },
           callbacks: {
+            // Full Ukrainian Month Name in Tooltip
+            title: function (items) {
+              if (items && items.length > 0) {
+                var idx = items[0].dataIndex;
+                return FULL_MONTH_NAMES[idx] || items[0].label;
+              }
+              return '';
+            },
             label: function (item) {
               return ' ' + item.dataset.label + ': ' + item.raw.toLocaleString('uk-UA') + ' вип.';
             }
