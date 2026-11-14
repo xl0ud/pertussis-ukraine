@@ -1,0 +1,127 @@
+/* EpiPulse Ukraine: Кашлюк (МКХ-10: А37)
+   Clean, Lightweight & Vibrant Medical Dashboard
+   Zero emojis, strictly institutional style
+*/
+
+:root {
+  --sidebar-w: 280px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sidebar transition & layout */
+#sidebar {
+  width: var(--sidebar-w);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+#mainWrapper {
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1024px) {
+  body.sidebar-open #mainWrapper {
+    margin-left: var(--sidebar-w);
+  }
+  body.sidebar-closed #mainWrapper {
+    margin-left: 0;
+  }
+  body.sidebar-closed #sidebar {
+    transform: translateX(-100%);
+  }
+}
+
+@media (max-width: 1023px) {
+  #sidebar {
+    transform: translateX(-100%);
+  }
+  body.mobile-sidebar-open #sidebar {
+    transform: translateX(0);
+  }
+  #mainWrapper {
+    margin-left: 0 !important;
+  }
+}
+
+/* Compact KPI Cards */
+.kpi-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+}
+
+/* Leaflet Container & STRICTLY NO WATERMARK */
+.leaflet-container {
+  background: #ffffff !important;
+  font-family: inherit !important;
+  outline: none;
+}
+
+/* Completely hide any attribution or watermark from Leaflet or tile providers */
+.leaflet-control-attribution,
+.leaflet-control-container .leaflet-control-attribution,
+.leaflet-bottom.leaflet-right,
+.leaflet-control-attribution a {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.leaflet-bar {
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  background-color: #ffffff !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Map Tooltip */
+.map-tooltip {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #ffffff !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+}
+
+.map-tooltip:before {
+  border-top-color: rgba(15, 23, 42, 0.92) !important;
+}
+
+/* Subtle scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
