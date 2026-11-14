@@ -271,13 +271,19 @@ function getCurrentStats() {
         cases = regYearCases;
         rate = regYearRate;
         if (selectedYear === '2024') {
-          changeStr = reg.change_24_23 ? reg.change_24_23 + ' до 2023 р.' : 'Річні дані';
+          var r23 = reg.cases_2023 || 0;
+          var mult = r23 > 0 ? (regYearCases / r23).toFixed(1) : null;
+          var multStr = mult ? ' (у ' + mult + ' р. більше до 2023 р.)' : ' до 2023 р.';
+          changeStr = (reg.change_24_23 || '') + multStr;
         } else if (selectedYear === '2025') {
-          changeStr = reg.change_25_24 ? reg.change_25_24 + ' до 2024 р.' : 'Річні дані';
+          var r24 = reg.cases_2024 || 0;
+          var mult2 = (regYearCases > 0 && r24 > 0) ? (r24 / regYearCases).toFixed(1) : null;
+          var multStr2 = mult2 ? ' (спад у ' + mult2 + ' р. до 2024 р.)' : ' до 2024 р.';
+          changeStr = (reg.change_25_24 || '') + multStr2;
         } else if (selectedYear === '2023') {
           changeStr = reg.cases_2023 + ' вип. за 2023 р.';
         } else if (isAllYears) {
-          changeStr = '10 років спостереження';
+          changeStr = '10 років спостереження (2016–2025 рр.)';
         }
       } else {
         cases = Math.max(0, Math.round(regYearCases * monthRatio));
@@ -365,8 +371,27 @@ function updateView() {
 
   var kpiCasesVal = document.getElementById('kpiCasesVal');
   var kpiCasesChange = document.getElementById('kpiCasesChange');
+  var kpiCasesBadge = document.getElementById('kpiCasesBadge');
   if (kpiCasesVal) kpiCasesVal.textContent = stats.cases.toLocaleString('uk-UA');
   if (kpiCasesChange) kpiCasesChange.textContent = stats.changeStr;
+  if (kpiCasesBadge) {
+    if (selectedMonth !== 'all') {
+      kpiCasesBadge.textContent = 'Місячний зріз';
+      kpiCasesBadge.className = 'font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px]';
+    } else if (selectedYear === '2024') {
+      kpiCasesBadge.textContent = 'Приріст';
+      kpiCasesBadge.className = 'font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px]';
+    } else if (selectedYear === '2025') {
+      kpiCasesBadge.textContent = 'Спад';
+      kpiCasesBadge.className = 'font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px]';
+    } else if (selectedYear === 'all') {
+      kpiCasesBadge.textContent = '10 років';
+      kpiCasesBadge.className = 'font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px]';
+    } else {
+      kpiCasesBadge.textContent = 'Динаміка';
+      kpiCasesBadge.className = 'font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px]';
+    }
+  }
 
   var kpiRateVal = document.getElementById('kpiRateVal');
   var kpiRateBenchmark = document.getElementById('kpiRateBenchmark');
