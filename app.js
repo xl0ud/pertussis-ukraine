@@ -10,6 +10,11 @@ var selectedYear = '2024';
 var selectedMonth = 'all';
 var mapMetric = 'rate';
 
+var trendStartYear = 2016;
+var trendEndYear = 2025;
+var compareYear1 = '2024';
+var compareYear2 = '2025';
+
 var yearsChartInstance = null;
 var monthlyChartInstance = null;
 
@@ -602,26 +607,68 @@ function updateMapColors() {
 }
 
 // ================= CHARTS =================
+function onTrendRangeChange() {
+  var sSel = document.getElementById('trendStartYear');
+  var eSel = document.getElementById('trendEndYear');
+  if (sSel && eSel) {
+    var sVal = parseInt(sSel.value);
+    var eVal = parseInt(eSel.value);
+    if (sVal > eVal) {
+      eSel.value = sVal;
+      eVal = sVal;
+    }
+    trendStartYear = sVal;
+    trendEndYear = eVal;
+  }
+  renderYearsChart();
+}
+
+function onCompareYearsChange() {
+  var sel1 = document.getElementById('compareYear1');
+  var sel2 = document.getElementById('compareYear2');
+  if (sel1) compareYear1 = sel1.value;
+  if (sel2) compareYear2 = sel2.value;
+  renderMonthlyChart();
+}
+
 function renderYearsChart() {
   var ctx = document.getElementById('yearsChart');
   if (!ctx || typeof Chart === 'undefined') return;
 
   var history = window.EPI_DATA.history_10y;
+  var allYears = history.years;
+  var allCases = history.cases;
+
+  var filteredYears = [];
+  var filteredCases = [];
+
+  for (var i = 0; i < allYears.length; i++) {
+    var y = allYears[i];
+    if (y >= trendStartYear && y <= trendEndYear) {
+      filteredYears.push(String(y));
+      filteredCases.push(allCases[i]);
+    }
+  }
+
+  var titleSpan = document.getElementById('yearsChartTitle');
+  if (titleSpan) {
+    if (trendStartYear === 2016 && trendEndYear === 2025) {
+      titleSpan.textContent = 'Динаміка за 10 років (2016-2025 рр.)';
+    } else {
+      titleSpan.textContent = 'Динаміка за ' + trendStartYear + '–' + trendEndYear + ' рр.';
+    }
+  }
+
   var pointBgColors = [];
   var pointRadii = [];
-  for (var i = 0; i < history.years.length; i++) {
-    if (String(history.years[i]) === String(selectedYear)) {
+  for (var j = 0; j < filteredYears.length; j++) {
+    if (filteredYears[j] === String(selectedYear)) {
       pointBgColors.push('#e11d48');
       pointRadii.push(7);
     } else {
       pointBgColors.push('#4f46e5');
       pointRadii.push(3.5);
     }
-  }
-
-  var labels = [];
-  for (var j = 0; j < history.years.length; j++) {
-    labels.push(String(history.years[j]));
   }
 
   if (yearsChartInstance) {
@@ -631,10 +678,10 @@ function renderYearsChart() {
   yearsChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels,
+      labels: filteredYears,
       datasets: [{
         label: 'Випадки',
-        data: history.cases,
+        data: filteredCases,
         borderColor: '#4f46e5',
         borderWidth: 2,
         backgroundColor: 'rgba(79, 70, 229, 0.08)',
@@ -660,9 +707,7 @@ function renderYearsChart() {
           bodyFont: { size: 12 },
           callbacks: {
             title: function (items) {
-              if (items && items.length > 0) {
-                return items[0].label + ' рік';
-              }
+              if (items && items.length > 0) return items[0].label + ' рік';
               return '';
             },
             label: function (item) {
@@ -678,7 +723,7 @@ function renderYearsChart() {
       onClick: function (e, elements) {
         if (elements && elements.length > 0) {
           var idx = elements[0].index;
-          selectYear(String(history.years[idx]));
+          selectYear(filteredYears[idx]);
         }
       }
     }
@@ -693,11 +738,19 @@ function renderMonthlyChart() {
   var months = dyn.months;
   var mIdx = selectedMonth !== 'all' ? parseInt(selectedMonth) - 1 : -1;
 
-  var bg2024 = [];
-  var bg2025 = [];
+  var data1 = dyn.by_year && dyn.by_year[compareYear1] ? dyn.by_year[compareYear1] : dyn.cases_2024;
+  var data2 = dyn.by_year && dyn.by_year[compareYear2] ? dyn.by_year[compareYear2] : dyn.cases_2025;
+
+  var bg1 = [];
+  var bg2 = [];
   for (var i = 0; i < months.length; i++) {
-    bg2024.push(i === mIdx ? '#be123c' : 'rgba(225, 29, 72, 0.85)');
-    bg2025.push(i === mIdx ? '#047857' : 'rgba(16, 185, 129, 0.85)');
+    bg1.push(i === mIdx ? '#be123c' : 'rgba(225, 29, 72, 0.85)');
+    bg2.push(i === mIdx ? '#047857' : 'rgba(16, 185, 129, 0.85)');
+  }
+
+  var mTitle = document.getElementById('monthlyChartTitle');
+  if (mTitle) {
+    mTitle.textContent = 'Помісячний розподіл (' + compareYear1 + ' vs ' + compareYear2 + ')';
   }
 
   if (monthlyChartInstance) {
@@ -710,15 +763,15 @@ function renderMonthlyChart() {
       labels: months,
       datasets: [
         {
-          label: '2024 р. (спалах)',
-          data: dyn.cases_2024,
-          backgroundColor: bg2024,
+          label: compareYear1 + ' рік',
+          data: data1,
+          backgroundColor: bg1,
           borderRadius: 3
         },
         {
-          label: '2025 р. (спад)',
-          data: dyn.cases_2025,
-          backgroundColor: bg2025,
+          label: compareYear2 + ' рік',
+          data: data2,
+          backgroundColor: bg2,
           borderRadius: 3
         }
       ]
