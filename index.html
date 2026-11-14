@@ -2,9 +2,12 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>Кашлюк в Україні (2016–2025): Моніторинг спалахів</title>
-  <meta name="description" content="Лаконічна аналітична панель захворюваності на кашлюк (МКХ-10: А37) в Україні: карти спалахів по областях, помісячні та багаторічні дані.">
+  <meta name="description" content="Аналітична панель захворюваності на кашлюк (МКХ-10: А37) в Україні: карти спалахів по областях, помісячні та багаторічні дані.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
 
   <!-- Tailwind CSS -->
   <script src="assets/tailwind.js"></script>
@@ -16,8 +19,8 @@
   <!-- Chart.js -->
   <script src="assets/chart.min.js"></script>
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Font Awesome (CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 
   <!-- Custom styles -->
   <link rel="stylesheet" href="styles.css">
@@ -25,23 +28,23 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen sidebar-open">
 
   <!-- Mobile Backdrop Overlay -->
-  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/30 z-30 hidden lg:hidden"></div>
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden"></div>
 
   <!-- ================= COLLAPSIBLE SIDEBAR ================= -->
-  <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-40 bg-white border-r border-slate-200 flex flex-col justify-between shadow-xs">
-    
+  <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-40 bg-white border-r border-slate-200 flex flex-col justify-between shadow-sm overflow-hidden">
+
     <!-- Sidebar Header -->
     <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-      <div class="flex items-center space-x-2.5">
+      <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center text-sm font-semibold">
           <i class="fa-solid fa-sliders"></i>
         </div>
         <div>
           <h2 class="text-xs font-bold text-slate-900 uppercase tracking-tight">Параметри вибірки</h2>
-          <p class="text-[11px] text-slate-500">Кашлюк (МКХ-10: А37)</p>
+          <p class="text-xs text-slate-500">Кашлюк (МКХ-10: А37)</p>
         </div>
       </div>
-      <button onclick="toggleSidebar()" title="Згорнути панель" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+      <button onclick="toggleSidebar()" title="Згорнути панель" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100">
         <i class="fa-solid fa-chevron-left text-xs"></i>
       </button>
     </div>
@@ -52,77 +55,62 @@
       <!-- 1. Year Selection -->
       <div class="space-y-1.5">
         <label for="yearSelect" class="block text-xs font-semibold text-slate-700">Рік спостереження:</label>
-        <div class="relative">
-          <select id="yearSelect" onchange="onYearChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer appearance-none">
-            <option value="all">2016–2025 рр. (10 років)</option>
-            <option value="2025">2025 рік (звітний рік)</option>
-            <option value="2024" selected>2024 рік (епідемічний спалах)</option>
-            <option value="2023">2023 рік</option>
-            <option value="2022">2022 рік</option>
-            <option value="2021">2021 рік</option>
-            <option value="2020">2020 рік</option>
-            <option value="2019">2019 рік</option>
-            <option value="2018">2018 рік</option>
-            <option value="2017">2017 рік</option>
-            <option value="2016">2016 рік</option>
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-            <i class="fa-solid fa-chevron-down text-[10px]"></i>
-          </div>
-        </div>
+        <select id="yearSelect" onchange="onYearChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+          <option value="all">2016-2025 рр. (10 років)</option>
+          <option value="2025">2025 рік (звітний рік)</option>
+          <option value="2024" selected>2024 рік (епідемічний спалах)</option>
+          <option value="2023">2023 рік</option>
+          <option value="2022">2022 рік</option>
+          <option value="2021">2021 рік</option>
+          <option value="2020">2020 рік</option>
+          <option value="2019">2019 рік</option>
+          <option value="2018">2018 рік</option>
+          <option value="2017">2017 рік</option>
+          <option value="2016">2016 рік</option>
+        </select>
       </div>
 
       <!-- 2. Month Selection -->
       <div class="space-y-1.5">
         <label for="monthSelect" class="block text-xs font-semibold text-slate-700">Місяць:</label>
-        <div class="relative">
-          <select id="monthSelect" onchange="onMonthChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer appearance-none">
-            <option value="all" selected>Весь рік (зведено)</option>
-            <option value="1">Січень</option>
-            <option value="2">Лютий</option>
-            <option value="3">Березень</option>
-            <option value="4">Квітень</option>
-            <option value="5">Травень (пік спалаху)</option>
-            <option value="6">Червень</option>
-            <option value="7">Липень</option>
-            <option value="8">Серпень</option>
-            <option value="9">Вересень</option>
-            <option value="10">Жовтень</option>
-            <option value="11">Листопад</option>
-            <option value="12">Грудень</option>
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-            <i class="fa-solid fa-chevron-down text-[10px]"></i>
-          </div>
-        </div>
+        <select id="monthSelect" onchange="onMonthChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+          <option value="all" selected>Весь рік (зведено)</option>
+          <option value="1">Січень</option>
+          <option value="2">Лютий</option>
+          <option value="3">Березень</option>
+          <option value="4">Квітень</option>
+          <option value="5">Травень (пік спалаху)</option>
+          <option value="6">Червень</option>
+          <option value="7">Липень</option>
+          <option value="8">Серпень</option>
+          <option value="9">Вересень</option>
+          <option value="10">Жовтень</option>
+          <option value="11">Листопад</option>
+          <option value="12">Грудень</option>
+        </select>
       </div>
 
       <!-- 3. Region Selection -->
       <div class="space-y-1.5">
         <label for="regionSelect" class="block text-xs font-semibold text-slate-700">Регіон:</label>
-        <div class="relative">
-          <select id="regionSelect" onchange="onRegionChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer appearance-none">
-            <option value="all" selected>Вся Україна (зведено)</option>
-            <!-- Populated by JS -->
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-            <i class="fa-solid fa-chevron-down text-[10px]"></i>
-          </div>
-        </div>
+        <select id="regionSelect" onchange="onRegionChange(this.value)" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+          <option value="all" selected>Вся Україна (зведено)</option>
+          <!-- Populated by JS -->
+        </select>
       </div>
 
       <!-- Reset Action -->
-      <button onclick="resetFilters()" class="w-full mt-2 py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
-        <i class="fa-solid fa-rotate-left text-[11px]"></i>
+      <button onclick="resetFilters()" class="w-full mt-2 py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-rotate-left text-xs"></i>
         <span>Скинути до стандартних</span>
       </button>
 
     </div>
 
     <!-- Sidebar Footer -->
-    <div class="p-3.5 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-500 flex justify-between items-center">
+    <div class="p-3.5 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex justify-between items-center">
       <span>ЦГЗ МОЗ України</span>
-      <span>Форма № 1</span>
+      <span>Форма №1</span>
     </div>
 
   </aside>
@@ -131,59 +119,54 @@
   <div id="mainWrapper" class="flex flex-col min-h-screen">
 
     <!-- Top Sticky Bar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
-        
+
         <!-- Left: Toggle & Title -->
-        <div class="flex items-center space-x-3">
-          <button onclick="toggleSidebar()" title="Показати/приховати фільтри" class="flex items-center space-x-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-slate-700 text-xs font-semibold transition-colors cursor-pointer">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" title="Показати/приховати фільтри" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-slate-700 text-xs font-semibold cursor-pointer">
             <i class="fa-solid fa-sliders text-xs"></i>
             <span class="hidden sm:inline">Фільтри</span>
           </button>
-          
+
           <div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
               <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">Кашлюк в Україні</h1>
-              <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">МКХ-10: А37</span>
+              <span class="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">МКХ-10: А37</span>
             </div>
-            <p id="activeFilterTag" class="text-[11px] text-slate-500 font-medium">
-              2024 рік • Весь рік • Вся Україна
+            <p id="activeFilterTag" class="text-xs text-slate-500 font-medium">
+              2024 рік | Весь рік | Вся Україна
             </p>
           </div>
         </div>
 
         <!-- Right: Quick Controls -->
-        <div class="flex items-center space-x-2">
-          
+        <div class="flex items-center gap-2 flex-wrap">
+
           <!-- Quick Year Switcher -->
           <div class="inline-flex rounded-lg bg-slate-100 border border-slate-200 p-0.5 text-xs font-medium">
-            <button onclick="selectYear('all')" id="top-yr-all" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900 transition-colors">10 років</button>
-            <button onclick="selectYear('2023')" id="top-yr-2023" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900 transition-colors">2023</button>
-            <button onclick="selectYear('2024')" id="top-yr-2024" class="px-2 py-1 rounded bg-rose-600 text-white font-semibold transition-colors">2024</button>
-            <button onclick="selectYear('2025')" id="top-yr-2025" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900 transition-colors">2025</button>
+            <button onclick="selectYear('all')" id="top-yr-all" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900">10 років</button>
+            <button onclick="selectYear('2023')" id="top-yr-2023" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900">2023</button>
+            <button onclick="selectYear('2024')" id="top-yr-2024" class="px-2 py-1 rounded bg-rose-600 text-white font-semibold">2024</button>
+            <button onclick="selectYear('2025')" id="top-yr-2025" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900">2025</button>
           </div>
 
           <!-- Quick Month Switcher -->
-          <div class="relative">
-            <select id="topMonthSelect" onchange="onMonthChange(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer appearance-none pr-6">
-              <option value="all" selected>Весь рік</option>
-              <option value="1">Січень</option>
-              <option value="2">Лютий</option>
-              <option value="3">Березень</option>
-              <option value="4">Квітень</option>
-              <option value="5">Травень (пік)</option>
-              <option value="6">Червень</option>
-              <option value="7">Липень</option>
-              <option value="8">Серпень</option>
-              <option value="9">Вересень</option>
-              <option value="10">Жовтень</option>
-              <option value="11">Листопад</option>
-              <option value="12">Грудень</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-400">
-              <i class="fa-solid fa-chevron-down text-[9px]"></i>
-            </div>
-          </div>
+          <select id="topMonthSelect" onchange="onMonthChange(this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-900 focus:outline-none cursor-pointer">
+            <option value="all" selected>Весь рік</option>
+            <option value="1">Січень</option>
+            <option value="2">Лютий</option>
+            <option value="3">Березень</option>
+            <option value="4">Квітень</option>
+            <option value="5">Травень (пік)</option>
+            <option value="6">Червень</option>
+            <option value="7">Липень</option>
+            <option value="8">Серпень</option>
+            <option value="9">Вересень</option>
+            <option value="10">Жовтень</option>
+            <option value="11">Листопад</option>
+            <option value="12">Грудень</option>
+          </select>
 
         </div>
 
@@ -195,24 +178,24 @@
 
       <!-- ================= 1. THREE COMPACT KPI CARDS ================= -->
       <section class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        
+
         <!-- Card 1: Cases (Rose) -->
-        <div class="kpi-card bg-gradient-to-br from-white to-rose-50/40 border border-rose-200 rounded-xl p-4 shadow-2xs">
+        <div class="kpi-card bg-gradient-to-br from-white to-rose-50 border border-rose-200 rounded-xl p-4 shadow-sm">
           <div class="flex items-center justify-between text-rose-800">
             <span class="text-xs font-semibold uppercase tracking-wider">Захворюваність</span>
             <i class="fa-solid fa-head-side-cough text-sm"></i>
           </div>
           <div class="mt-1.5 flex items-baseline gap-2">
-            <span id="kpiCasesVal" class="text-2xl sm:text-3xl font-extrabold text-rose-950 tracking-tight">7,545</span>
+            <span id="kpiCasesVal" class="text-2xl sm:text-3xl font-extrabold text-rose-950 tracking-tight">7 545</span>
             <span class="text-xs text-rose-700">випадків</span>
           </div>
-          <p id="kpiCasesChange" class="text-[11px] font-semibold text-rose-800 mt-1.5">
+          <p id="kpiCasesChange" class="text-xs font-semibold text-rose-800 mt-1.5">
             +967.2% до 2023 р.
           </p>
         </div>
 
         <!-- Card 2: Rate (Indigo) -->
-        <div class="kpi-card bg-gradient-to-br from-white to-indigo-50/40 border border-indigo-200 rounded-xl p-4 shadow-2xs">
+        <div class="kpi-card bg-gradient-to-br from-white to-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm">
           <div class="flex items-center justify-between text-indigo-800">
             <span class="text-xs font-semibold uppercase tracking-wider">Показник на 100 тис.</span>
             <i class="fa-solid fa-chart-line text-sm"></i>
@@ -221,31 +204,31 @@
             <span id="kpiRateVal" class="text-2xl sm:text-3xl font-extrabold text-indigo-950 tracking-tight">18.40</span>
             <span class="text-xs text-indigo-700">інтенсивний рівень</span>
           </div>
-          <p id="kpiRateBenchmark" class="text-[11px] font-semibold text-indigo-800 mt-1.5">
+          <p id="kpiRateBenchmark" class="text-xs font-semibold text-indigo-800 mt-1.5">
             Базис: 5.56 (в 3.3 р. вище норми)
           </p>
         </div>
 
-        <!-- Card 3: Hotspot Region (Amber / Emerald) -->
-        <div class="kpi-card bg-gradient-to-br from-white to-amber-50/40 border border-amber-200 rounded-xl p-4 shadow-2xs">
+        <!-- Card 3: Hotspot Region (Amber) -->
+        <div class="kpi-card bg-gradient-to-br from-white to-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
           <div class="flex items-center justify-between text-amber-800">
-            <span class="text-xs font-semibold uppercase tracking-wider">Епіцентр спалаху</span>
+            <span id="kpiHotspotTitle" class="text-xs font-semibold uppercase tracking-wider">Епіцентр спалаху</span>
             <i class="fa-solid fa-location-dot text-sm"></i>
           </div>
           <div class="mt-1.5">
             <div id="kpiHotspotVal" class="text-base sm:text-lg font-bold text-amber-950 truncate">Івано-Франківська обл.</div>
-            <p id="kpiHotspotSub" class="text-xs text-amber-700 font-medium">90.80 на 100 тис. (1,225 вип.)</p>
+            <p id="kpiHotspotSub" class="text-xs text-amber-700 font-medium">90.80 на 100 тис. (1 225 вип.)</p>
           </div>
-          <p id="kpiStatusVal" class="text-[11px] font-semibold text-amber-800 mt-1.5">
+          <p id="kpiStatusVal" class="text-xs font-semibold text-amber-800 mt-1.5">
             Епідемічне ускладнення
           </p>
         </div>
 
       </section>
 
-      <!-- ================= 2. MAP OF UKRAINE (ZERO WATERMARKS) ================= -->
-      <section class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-2xs space-y-3">
-        
+      <!-- ================= 2. MAP OF UKRAINE ================= -->
+      <section class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -259,47 +242,41 @@
 
           <!-- Metric Switcher -->
           <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-semibold self-start sm:self-auto">
-            <button onclick="setMapMetric('rate')" id="btn-map-rate" class="px-2.5 py-1 rounded bg-white text-indigo-700 shadow-2xs">На 100 тис.</button>
+            <button onclick="setMapMetric('rate')" id="btn-map-rate" class="px-2.5 py-1 rounded bg-white text-indigo-700 shadow-sm">На 100 тис.</button>
             <button onclick="setMapMetric('abs')" id="btn-map-abs" class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900 font-medium">Випадки</button>
           </div>
         </div>
 
-        <!-- Pure Vector Map Container -->
+        <!-- Vector Map Container -->
         <div class="relative w-full rounded-xl overflow-hidden border border-slate-100 bg-white">
-          <div id="ukraineMap" class="w-full" style="height: 400px;"></div>
-          
-          <!-- Hover/Selection badge on top of map -->
-          <div id="mapHoverInfo" class="absolute top-2.5 right-2.5 z-10 bg-white/95 backdrop-blur-xs border border-slate-200 rounded-lg px-3 py-2 shadow-xs text-xs pointer-events-none">
+          <div id="ukraineMap" class="w-full" style="height: 400px; min-height: 280px;"></div>
+
+          <!-- Hover badge on top of map -->
+          <div id="mapHoverInfo" class="absolute top-2.5 right-2.5 z-10 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm text-xs pointer-events-none" style="background: rgba(255,255,255,0.96);">
             <span id="mapHoverName" class="font-bold text-slate-900">Наведіть на область</span>
-            <div id="mapHoverStats" class="text-[11px] text-slate-600 mt-0.5">Оберіть регіон для перегляду</div>
+            <div id="mapHoverStats" class="text-xs text-slate-600 mt-0.5">Оберіть регіон для перегляду</div>
           </div>
         </div>
 
-        <!-- Clean 4-Color Legend Strip -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-600">
-          <div class="flex flex-wrap items-center gap-3.5">
-            <span class="font-medium text-slate-500 text-[11px]">Рівень спалаху:</span>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span>
-              <span class="text-[11px]">&lt; 2.0 (Фоновий)</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3 h-3 rounded bg-amber-400 inline-block"></span>
-              <span class="text-[11px]">2.0–10.0 (Помірний)</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3 h-3 rounded bg-orange-500 inline-block"></span>
-              <span class="text-[11px]">10.0–30.0 (Високий)</span>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <span class="w-3 h-3 rounded bg-rose-600 inline-block"></span>
-              <span class="text-[11px]">&gt; 30.0 (Спалах)</span>
-            </div>
+        <!-- 4-Color Legend Strip -->
+        <div class="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-600">
+          <span class="font-medium text-slate-500 text-xs">Рівень спалаху:</span>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded inline-block" style="background:#10b981;"></span>
+            <span class="text-xs">&lt; 2.0 (Фоновий)</span>
           </div>
-
-          <button onclick="onRegionChange('all')" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer">
-            Показати всю Україну
-          </button>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded inline-block" style="background:#f59e0b;"></span>
+            <span class="text-xs">2.0-10.0 (Помірний)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded inline-block" style="background:#f97316;"></span>
+            <span class="text-xs">10.0-30.0 (Високий)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded inline-block" style="background:#e11d48;"></span>
+            <span class="text-xs">&gt; 30.0 (Спалах)</span>
+          </div>
         </div>
 
       </section>
@@ -308,13 +285,12 @@
       <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         <!-- Chart 1: 10-Year Trend -->
-        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
               <i class="fa-solid fa-chart-line text-indigo-600"></i>
-              <span>Динаміка за 10 років (2016–2025 рр.)</span>
+              <span>Динаміка за 10 років (2016-2025 рр.)</span>
             </h3>
-            <span class="text-[11px] text-slate-400 font-medium">Трендова крива</span>
           </div>
           <div class="relative w-full" style="height: 220px;">
             <canvas id="yearsChart"></canvas>
@@ -322,13 +298,12 @@
         </div>
 
         <!-- Chart 2: Monthly Dynamics -->
-        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
               <i class="fa-solid fa-chart-column text-rose-600"></i>
               <span>Помісячний розподіл (2024 vs 2025)</span>
             </h3>
-            <span class="text-[11px] text-slate-400 font-medium">Січень–Грудень</span>
           </div>
           <div class="relative w-full" style="height: 220px;">
             <canvas id="monthlyChart"></canvas>
@@ -338,16 +313,16 @@
       </section>
 
       <!-- ================= 4. CONCISE SUMMARY NOTE ================= -->
-      <section class="p-3.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed shadow-2xs">
+      <section class="p-3.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed shadow-sm">
         <span class="font-bold text-slate-800">Епідеміологічна оцінка ЦГЗ МОЗ України:</span>
-        Спалах 2024 року (7,545 випадків) був викликаний накопиченням неімунного дитячого прошарку через прогалини в плановій АКДП-вакцинації під час пандемії та воєнного стану. У 2025 році зафіксовано суттєвий спад захворюваності на 85.1% (1,123 випадки) завдяки активній додатковій імунізації.
+        Спалах 2024 року (7 545 випадків) був викликаний накопиченням неімунного дитячого прошарку через прогалини в плановій АКДП-вакцинації під час пандемії та воєнного стану. У 2025 році зафіксовано суттєвий спад захворюваності на 85.1% (1 123 випадки) завдяки активній додатковій імунізації.
       </section>
 
     </main>
 
     <!-- Minimal Footer -->
-    <footer class="py-3 px-4 text-center text-[11px] text-slate-400 border-t border-slate-200 bg-white">
-      Центр громадського здоров’я МОЗ України • МКХ-10: А37 (Кашлюк) • Офіційна звітність 2016–2025 рр.
+    <footer class="py-3 px-4 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
+      Центр громадського здоров'я МОЗ України | МКХ-10: А37 (Кашлюк) | 2016-2025 рр.
     </footer>
 
   </div>
