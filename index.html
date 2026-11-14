@@ -12,10 +12,6 @@
   <!-- Tailwind CSS -->
   <script src="assets/tailwind.js"></script>
 
-  <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="assets/leaflet.css">
-  <script src="assets/leaflet.js"></script>
-
   <!-- Chart.js -->
   <script src="assets/chart.min.js"></script>
 
@@ -28,7 +24,7 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
   <!-- ================= BACKDROP OVERLAY ================= -->
-  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden cursor-pointer backdrop-blur-[2px]"></div>
+  <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-40 hidden cursor-pointer backdrop-blur-[2px]"></div>
 
   <!-- ================= OFFCANVAS SIDEBAR DRAWER ================= -->
   <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 bg-white border-r border-slate-200 flex flex-col justify-between shadow-2xl -translate-x-full">
@@ -121,7 +117,7 @@
 
   </aside>
 
-  <!-- ================= TOP HEADER (STREAMLINED & CONCISE) ================= -->
+  <!-- ================= TOP HEADER ================= -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
 
@@ -140,14 +136,14 @@
         </div>
       </div>
 
-      <!-- Right: Active Filter Indicator & Year Switcher -->
+      <!-- Right: Active Indicator & Year Buttons -->
       <div class="flex items-center gap-2.5">
         <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-xs font-medium text-slate-700">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span id="activeFilterTag">2024 рік | Весь рік | Вся Україна</span>
         </div>
 
-        <!-- Compact Year Buttons -->
+        <!-- Year Switcher -->
         <div class="inline-flex rounded-lg bg-slate-100 border border-slate-200 p-0.5 text-xs font-medium">
           <button onclick="selectYear('all')" id="top-yr-all" type="button" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900">10 р.</button>
           <button onclick="selectYear('2023')" id="top-yr-2023" type="button" class="px-2 py-1 rounded text-slate-600 hover:text-slate-900">2023</button>
@@ -212,10 +208,10 @@
 
     </section>
 
-    <!-- 2. REFINED MAP OF UKRAINE -->
-    <section class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+    <!-- 2. REFINED SVG MAP OF UKRAINE -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5">
 
-      <!-- Map Top Toolbar -->
+      <!-- Map Toolbar Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
         <div>
           <h2 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -223,7 +219,7 @@
             <span>Географічний моніторинг спалахів в Україні</span>
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Період: <strong id="mapPeriodLabel" class="text-slate-700 font-semibold">2024 рік, весь рік</strong>. Натисніть на область для фокусування.
+            Період: <strong id="mapPeriodLabel" class="text-slate-700 font-semibold">2024 рік, весь рік</strong>
           </p>
         </div>
 
@@ -235,38 +231,48 @@
           </div>
 
           <!-- Reset Zoom Button -->
-          <button onclick="resetMapSelection()" type="button" title="Показати всю Україну" class="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs cursor-pointer transition">
-            <i class="fa-solid fa-expand text-xs"></i>
+          <button onclick="resetMapSelection()" type="button" title="Показати всю Україну" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-medium cursor-pointer transition">
+            <i class="fa-solid fa-rotate-left text-[11px]"></i>
+            <span class="hidden sm:inline">Вся Україна</span>
           </button>
         </div>
       </div>
 
-      <!-- Vector Map Container -->
-      <div class="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
-        <div id="ukraineMap" class="w-full"></div>
+      <!-- Dedicated Active Region Detail Strip (OUTSIDE MAP: ZERO OVERLAP!) -->
+      <div id="activeRegionBar" class="bg-gradient-to-r from-slate-50 to-indigo-50/30 border border-slate-200/90 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-3">
+          <span id="mapBarDot" class="w-3.5 h-3.5 rounded-full bg-rose-600 ring-4 ring-rose-100 shrink-0"></span>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 id="mapBarName" class="text-xs sm:text-sm font-bold text-slate-900">Вся Україна (зведено)</h3>
+              <span id="mapBarBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200">Спалах (&gt; 30)</span>
+            </div>
+            <p id="mapBarSub" class="text-[11px] text-slate-500">Оберіть область на карті нижче для деталізації</p>
+          </div>
+        </div>
 
-        <!-- Sleek Floating Detail Card -->
-        <div id="mapHoverInfo" class="absolute top-3 right-3 z-10 bg-white/95 border border-slate-200/90 rounded-xl p-3 shadow-md backdrop-blur-xs min-w-[200px] pointer-events-none transition-all">
-          <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 mb-1.5">
-            <span id="mapHoverName" class="font-bold text-slate-900 text-xs truncate">Вся Україна</span>
-            <span id="mapHoverBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">Спалах</span>
+        <div class="flex items-center gap-4 text-xs ml-auto sm:ml-0">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Зареєстровано</span>
+            <span id="mapBarCases" class="text-sm sm:text-base font-extrabold text-slate-900">7 545 вип.</span>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <div class="text-[10px] text-slate-400 uppercase font-semibold">Випадків</div>
-              <div id="mapHoverCases" class="font-extrabold text-slate-900 text-sm">7 545</div>
-            </div>
-            <div>
-              <div class="text-[10px] text-slate-400 uppercase font-semibold">На 100 тис.</div>
-              <div id="mapHoverRate" class="font-extrabold text-indigo-600 text-sm">18.40</div>
-            </div>
+          <div class="h-6 w-px bg-slate-200"></div>
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">На 100 тис.</span>
+            <span id="mapBarRate" class="text-sm sm:text-base font-extrabold text-indigo-600">18.40</span>
           </div>
-          <div id="mapHoverHint" class="text-[10px] text-slate-400 mt-1.5 text-center">Оберіть область на карті</div>
         </div>
       </div>
 
+      <!-- Native SVG Map Container (Edge-to-Edge Responsive, Always Centered) -->
+      <div class="w-full flex justify-center items-center py-2 px-1 bg-white rounded-xl border border-slate-100">
+        <svg id="ukraineSvg" viewBox="0 0 1000 684" class="w-full h-auto max-h-[500px] select-none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Rendered dynamically by app.js -->
+        </svg>
+      </div>
+
       <!-- 4-Color Legend Strip -->
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-slate-600">
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-slate-600 border-t border-slate-100">
         <div class="flex flex-wrap items-center gap-3">
           <span class="font-semibold text-slate-500 text-xs">Рівень інтенсивності:</span>
           <div class="flex items-center gap-1.5">
@@ -288,7 +294,7 @@
         </div>
 
         <button onclick="resetMapSelection()" type="button" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer">
-          Скинути вибір області
+          Скинути вибір
         </button>
       </div>
 
@@ -339,7 +345,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="ukraine_geojson.js"></script>
+  <script src="ukraine_svg_data.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>

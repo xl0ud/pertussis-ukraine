@@ -1,5 +1,5 @@
 /* EpiPulse Ukraine: Кашлюк (МКХ-10: А37)
- * Оптимізована версія з плавними переходами без лагів
+ * Оптимізована версія з адаптивною векторною картою SVG
  */
 
 * {
@@ -32,9 +32,9 @@ button, select, [role="button"] {
 
 /* ================= OFFCANVAS SIDEBAR (ZERO REFLOW LAG) ================= */
 #sidebar {
-  width: 300px;
-  max-width: 85vw;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 320px;
+  max-width: 86vw;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
   -webkit-overflow-scrolling: touch;
 }
@@ -55,64 +55,22 @@ button, select, [role="button"] {
   box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.08);
 }
 
-/* ================= LEAFLET MAP & VECTOR PATHS ================= */
-.leaflet-container {
-  background: #f8fafc !important;
-  font-family: inherit !important;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Hide Leaflet attribution completely */
-.leaflet-control-attribution {
-  display: none !important;
-}
-
-/* Smooth SVG transitions */
-path.leaflet-interactive {
-  transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+/* ================= VECTOR SVG MAP STYLING ================= */
+.region-path {
+  transition: fill 0.18s ease, stroke 0.18s ease, stroke-width 0.18s ease, filter 0.18s ease;
+  outline: none !important;
   cursor: pointer;
 }
-path.leaflet-interactive:focus {
-  outline: none !important;
+
+.region-path:hover {
+  filter: brightness(0.95) drop-shadow(0 3px 8px rgba(15, 23, 42, 0.25));
 }
 
-.leaflet-bar {
-  border-radius: 8px !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
-  overflow: hidden;
+.region-path.active-selected {
+  filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.35));
 }
 
-.leaflet-bar a {
-  background-color: #ffffff !important;
-  color: #475569 !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-}
-
-.leaflet-bar a:hover {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-/* Minimal Crisp Map Tooltip */
-.map-tooltip {
-  background: rgba(15, 23, 42, 0.94) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 6px !important;
-  color: #ffffff !important;
-  padding: 4px 8px !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
-  pointer-events: none;
-}
-
-.map-tooltip::before {
-  border-top-color: rgba(15, 23, 42, 0.94) !important;
-}
-
-/* ================= FORM CONTROLS & IOS SAFARI ================= */
+/* Form Controls & iOS Safari fixes */
 select {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -128,16 +86,6 @@ select {
 @media screen and (max-width: 768px) {
   select {
     font-size: 16px !important;
-  }
-}
-
-/* Map responsive height */
-#ukraineMap {
-  height: 420px;
-}
-@media screen and (max-width: 640px) {
-  #ukraineMap {
-    height: 330px !important;
   }
 }
 
